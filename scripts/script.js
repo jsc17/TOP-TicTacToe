@@ -1,54 +1,40 @@
 const gameboard = (function () {
   const _board = [];
 
-  for (let row = 0; row <= 2; row++) {
-    _board[row] = [];
-    for (let col = 0; col <= 2; col++) {
-      _board[row].push(square());
-    }
+  for (let index = 0; index < 9; index++) {
+    _board.push("-");
   }
 
   const display = () => {
     let result = "";
-    for (let row = 0; row <= 2; row++) {
-      for (let col = 0; col <= 2; col++) {
-        result += _board[row][col].getValue();
+
+    let index = 0;
+    while (index < 9) {
+      result += _board[index];
+      index++;
+      if (index % 3 == 0) {
+        result += "\n";
       }
-      result += "\n";
     }
+
     console.log(result);
   };
 
-  const setSquare = (row, col, player) => {
-    _board[row][col].setValue(player);
+  const setSquare = (index, player) => {
+    _board[index] = player;
   };
 
-  const getSquare = (row, col) => {
-    return _board[row][col].getValue();
+  const getSquare = (index) => {
+    return _board[index];
   };
 
   const reset = () => {
-    for (let row = 0; row <= 2; row++) {
-      for (let col = 0; col <= 2; col++) {
-        _board[row][col].setValue("-");
-      }
+    for (let index = 0; index < 9; index++) {
+      _board[index] = "-";
     }
   };
   return { display, setSquare, getSquare, reset };
 })();
-
-function square() {
-  let value = "-";
-
-  const setValue = (player) => {
-    value = player;
-  };
-  const getValue = () => {
-    return value;
-  };
-
-  return { setValue, getValue };
-}
 
 function player(name, token) {
   let _token = token;
@@ -67,7 +53,7 @@ function player(name, token) {
 
 const game = (function () {
   const _player1 = player("player1", "x");
-  const _player2 = player("player2", "O");
+  const _player2 = player("player2", "o");
   let _currentPlayer = _player1;
   let _winner = null;
 
@@ -89,37 +75,35 @@ const game = (function () {
 
   const _checkWinner = () => {
     //check rows for victory
-    for (row = 0; row <= 2; row++) {
+    for (let index = 0; index <= 6; index = index + 3) {
       if (
-        gameboard.getSquare(row, 0) != "-" &&
-        gameboard.getSquare(row, 0) == gameboard.getSquare(row, 1) &&
-        gameboard.getSquare(row, 0) == gameboard.getSquare(row, 2)
+        gameboard.getSquare(index) != "-" &&
+        gameboard.getSquare(index) == gameboard.getSquare(index + 1) &&
+        gameboard.getSquare(index) == gameboard.getSquare(index + 2)
       ) {
         _winner = _currentPlayer;
       }
     }
-    //check columns for victory
-    for (col = 0; col <= 2; col++) {
+    for (let index = 0; index <= 2; index++) {
       if (
-        gameboard.getSquare(0, col) != "-" &&
-        gameboard.getSquare(0, col) == gameboard.getSquare(1, col) &&
-        gameboard.getSquare(0, col) == gameboard.getSquare(2, col)
+        gameboard.getSquare(index) != "-" &&
+        gameboard.getSquare(index) == gameboard.getSquare(index + 3) &&
+        gameboard.getSquare(index) == gameboard.getSquare(index + 6)
       ) {
         _winner = _currentPlayer;
       }
     }
-    //check diagonals for victory
     if (
-      gameboard.getSquare(0, 0) != "-" &&
-      gameboard.getSquare(0, 0) == gameboard.getSquare(1, 1) &&
-      gameboard.getSquare(0, 0) == gameboard.getSquare(2, 2)
+      gameboard.getSquare(0) != "-" &&
+      gameboard.getSquare(0) == gameboard.getSquare(4) &&
+      gameboard.getSquare(0) == gameboard.getSquare(8)
     ) {
       _winner = _currentPlayer;
     }
     if (
-      gameboard.getSquare(2, 0) != "-" &&
-      gameboard.getSquare(2, 0) == gameboard.getSquare(1, 1) &&
-      gameboard.getSquare(2, 0) == gameboard.getSquare(0, 2)
+      gameboard.getSquare(6) != "-" &&
+      gameboard.getSquare(6) == gameboard.getSquare(4) &&
+      gameboard.getSquare(6) == gameboard.getSquare(2)
     ) {
       _winner = _currentPlayer;
     }
@@ -129,18 +113,18 @@ const game = (function () {
     gameboard.display();
     while (_winner == null) {
       let input = _getPlayerInput();
-      gameboard.setSquare(
-        Math.floor(input / 3),
-        input % 3,
-        _currentPlayer.getToken()
-      );
+      gameboard.setSquare(input, _currentPlayer.getToken());
       _checkWinner();
-      if (_winner == null) _swapCurrentPlayer();
+      if (_winner == null) {
+        _swapCurrentPlayer();
+      }
       gameboard.display();
     }
     console.log(_winner.getName());
+    gameboard.reset();
+    _winner = null;
   };
-  gameboard.reset();
+
   return { play };
 })();
 
