@@ -48,7 +48,11 @@ function player(name, token) {
     return _name;
   };
 
-  return { getToken, getName };
+  const setName = (name) => {
+    _name = name;
+  };
+
+  return { getToken, getName, setName };
 }
 
 const game = (function () {
@@ -84,6 +88,7 @@ const game = (function () {
         _winner = _currentPlayer;
       }
     }
+    //check columns for victory
     for (let index = 0; index <= 2; index++) {
       if (
         gameboard.getSquare(index) != "-" &&
@@ -93,6 +98,7 @@ const game = (function () {
         _winner = _currentPlayer;
       }
     }
+    //check diagonals for victory
     if (
       gameboard.getSquare(0) != "-" &&
       gameboard.getSquare(0) == gameboard.getSquare(4) &&

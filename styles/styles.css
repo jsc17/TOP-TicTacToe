@@ -23,6 +23,52 @@ header h1 {
   color: #cbd5e1;
 }
 
+main {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  align-items: center;
+  padding-top: 32px;
+}
+
+.game h1 {
+  font-size: 2rem;
+}
+
+.game h2 {
+  font-size: 1.5rem;
+}
+
+.gameboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  height: 400px;
+  width: 400px;
+}
+
+.player-info {
+  padding-top: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 50px;
+}
+
+.player-info h1 {
+  font-size: 5rem;
+}
+
+.cell {
+  border: 2px solid black;
+  background-color: white;
+}
+
 footer {
   display: flex;
   justify-content: center;
@@ -34,10 +80,6 @@ footer {
   width: 100%;
   height: 75px;
   background-color: var(--bg-color);
-}
-
-.cell {
-  border: 2px solid black;
 }
 
 footer a {
