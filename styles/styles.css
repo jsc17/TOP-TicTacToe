@@ -44,7 +44,7 @@ main {
   font-size: 1.5rem;
 }
 
-.gameboard {
+#gameboard {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr;
@@ -67,6 +67,14 @@ main {
 .cell {
   border: 2px solid black;
   background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+}
+
+.cell:hover {
+  background-color: #475569;
 }
 
 footer {

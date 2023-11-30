@@ -5,23 +5,9 @@ const gameboard = (function () {
     _board.push("-");
   }
 
-  const display = () => {
-    let result = "";
-
-    let index = 0;
-    while (index < 9) {
-      result += _board[index];
-      index++;
-      if (index % 3 == 0) {
-        result += "\n";
-      }
-    }
-
-    console.log(result);
-  };
-
   const setSquare = (index, player) => {
     _board[index] = player;
+    displayController.setCell(index, player);
   };
 
   const getSquare = (index) => {
@@ -31,14 +17,17 @@ const gameboard = (function () {
   const reset = () => {
     for (let index = 0; index < 9; index++) {
       _board[index] = "-";
+      displayController.setCell(index, "-");
     }
   };
-  return { display, setSquare, getSquare, reset };
+  return { setSquare, getSquare, reset };
 })();
 
-function player(name, token) {
+function player(name, token, id) {
+  let _playerId = id;
   let _token = token;
   let _name = name;
+  let _score = 0;
 
   const getToken = () => {
     return _token;
@@ -48,17 +37,24 @@ function player(name, token) {
     return _name;
   };
 
+  const getId = () => {
+    return _playerId;
+  };
   const setName = (name) => {
     _name = name;
   };
 
-  return { getToken, getName, setName };
+  const addPoint = () => {
+    _score++;
+    return _score;
+  };
+
+  return { getToken, getName, getId, setName, addPoint };
 }
 
 const game = (function () {
-  const _player1 = player("player1", "x");
-  const _player2 = player("player2", "o");
-  let _currentPlayer = _player1;
+  const _playerList = [player("Player 1", "x", 0), player("Player 2", "o", 1)];
+  let _currentPlayer = _playerList[0];
   let _winner = null;
 
   const _getPlayerInput = () => {
@@ -71,10 +67,14 @@ const game = (function () {
     return input - 1;
   };
 
+  const setPlayerName = (id, newName) => {
+    _playerList[id].setName(newName);
+  };
+
   const _swapCurrentPlayer = () => {
-    return _currentPlayer == _player1
-      ? (_currentPlayer = _player2)
-      : (_currentPlayer = _player1);
+    return _currentPlayer == _playerList[0]
+      ? (_currentPlayer = _playerList[1])
+      : (_currentPlayer = _playerList[0]);
   };
 
   const _checkWinner = () => {
@@ -113,8 +113,59 @@ const game = (function () {
     ) {
       _winner = _currentPlayer;
     }
+    if (_winner != null) {
+      displayController.setMessage(_currentPlayer.getName() + " Wins!");
+      score = _currentPlayer.addPoint();
+      displayController.setScore(_currentPlayer.getId(), score);
+    }
+    if (_winner == null) {
+      let filled = 0;
+      for (let index = 0; index <= 8; index++) {
+        if (gameboard.getSquare(index) != "-") {
+          filled++;
+        }
+      }
+      if (filled == 9) {
+        _winner = "tie";
+        displayController.setMessage(
+          "The game is a tie! Who would have guessed."
+        );
+      }
+    }
   };
 
+  const makeMove = (index) => {
+    if (_winner == null) {
+      if (gameboard.getSquare(index) != "-") {
+        displayController.setMessage(
+          "Invalid Move - " +
+            _currentPlayer.getName() +
+            "'s turn - " +
+            _currentPlayer.getToken()
+        );
+      } else {
+        gameboard.setSquare(index, _currentPlayer.getToken());
+        _checkWinner();
+        _swapCurrentPlayer();
+        if (_winner == null) {
+          displayController.setMessage(
+            _currentPlayer.getName() + "'s turn - " + _currentPlayer.getToken()
+          );
+        }
+      }
+    }
+  };
+
+  const reset = () => {
+    gameboard.reset();
+    _winner = null;
+    _currentPlayer = _playerList[0];
+    displayController.setMessage(
+      _currentPlayer.getName() + "'s turn - " + _currentPlayer.getToken()
+    );
+  };
+
+  //used to play in console for testing
   const play = () => {
     gameboard.display();
     while (_winner == null) {
@@ -131,9 +182,53 @@ const game = (function () {
     _winner = null;
   };
 
-  return { play };
+  return { play, makeMove, reset, setPlayerName };
 })();
 
-document.querySelector("#start").addEventListener("click", function () {
-  game.play();
-});
+const displayController = (function () {
+  _uiBoard = document.querySelector("#gameboard");
+  _uiMessage = document.querySelector("#message");
+  _uiCells = [];
+  _uiPlayerNames = document.querySelectorAll(".player-name");
+  _uiPlayerScores = document.querySelectorAll(".player-score");
+
+  for (let index = 0; index <= 8; index++) {
+    let cell = document.createElement("div");
+    cell.classList.add("cell");
+    cell.setAttribute("data-id", index);
+    cell.innerText = gameboard.getSquare(index);
+    cell.addEventListener("click", function () {
+      game.makeMove(cell.getAttribute("data-id"));
+    });
+    _uiCells.push(cell);
+    _uiBoard.appendChild(cell);
+  }
+
+  document.querySelector("#reset").addEventListener("click", function () {
+    game.reset();
+  });
+
+  _uiPlayerNames.forEach((player) => {
+    player.addEventListener("click", function () {
+      newName = prompt("Enter player name: ");
+      if (newName != null) {
+        game.setPlayerName(player.getAttribute("data-id"), newName);
+        player.innerText = newName;
+      }
+    });
+  });
+
+  const setCell = (index, value) => {
+    _uiCells[index].innerText = value;
+  };
+
+  const setMessage = (message) => {
+    _uiMessage.innerText = message;
+  };
+
+  const setScore = (playerId, score) => {
+    _uiPlayerScores[playerId].innerText = score;
+  };
+
+  return { setCell, setMessage, setScore };
+})();
